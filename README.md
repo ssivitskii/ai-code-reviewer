@@ -1,310 +1,70 @@
-# 🔍 AI Code Reviewer
+# AI Code Reviewer
 
-<div align="center">
+**LLM-assisted code review with a CLI, FastAPI service and Streamlit interface.**
 
-![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/coverage-87%25-yellowgreen.svg)
+[Source](https://github.com/ssivitskii/ai-code-reviewer) · [Issues](https://github.com/ssivitskii/ai-code-reviewer/issues) · [Contributing](CONTRIBUTING.md)
 
-**Intelligent code review powered by LLMs. Get meaningful feedback on your pull requests automatically.**
+## What it does
 
-[Features](#-features) • [Quick Start](#-quick-start) • [GitHub Action](#-github-action) • [API](#-api) • [Demo](#-demo)
+Reviews files, Git diffs and staged changes, returning structured issues and a summary. Provider adapters support OpenAI, Anthropic and a local OpenAI-compatible endpoint. Review modes are `quick`, `standard` and `deep`.
 
-<img src="assets/demo.gif" alt="AI Code Reviewer Demo" width="700">
+**Stack:** Python · OpenAI / Anthropic SDKs · Click · FastAPI · Streamlit
 
-</div>
+## Run locally
 
----
-
-## ✨ Features
-
-- 🎯 **Smart Analysis** — Understands code context, not just syntax
-- 🐛 **Bug Detection** — Catches potential bugs, security issues, and anti-patterns
-- 💡 **Suggestions** — Provides actionable improvement suggestions with code examples
-- 🔄 **Multi-Language** — Supports Python, JavaScript, TypeScript, Go, Rust, Java
-- ⚡ **Fast** — Reviews typical PRs in under 10 seconds
-- 🔌 **Flexible** — Use as CLI, API, GitHub Action, or Python library
-
-## 🚀 Quick Start
-
-### Installation
+Use Python 3.11 and run these commands from the repository root:
 
 ```bash
-pip install ai-code-reviewer
-```
-
-### Basic Usage
-
-```python
-from ai_code_reviewer import CodeReviewer
-
-reviewer = CodeReviewer()
-
-# Review a code snippet
-code = """
-def calculate_average(numbers):
-    total = 0
-    for n in numbers:
-        total += n
-    return total / len(numbers)
-"""
-
-review = reviewer.review(code, language="python")
-print(review)
-```
-
-**Output:**
-```
-🔍 Code Review Results
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⚠️  POTENTIAL BUG (Line 5)
-   Division by zero if `numbers` is empty.
-   
-   💡 Suggestion:
-   def calculate_average(numbers):
-       if not numbers:
-           return 0  # or raise ValueError
-       return sum(numbers) / len(numbers)
-
-📝 IMPROVEMENT (Line 2-4)
-   Manual sum calculation can be simplified.
-   
-   💡 Suggestion:
-   Use built-in `sum()` function for better readability and performance.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Summary: 1 bug, 1 suggestion | Quality Score: 7/10
-```
-
-### Review a Git Diff
-
-```bash
-# Review staged changes
-ai-review --staged
-
-# Review a specific file
-ai-review path/to/file.py
-
-# Review a PR diff
-ai-review --diff pr_changes.patch
-```
-
-## 🤖 GitHub Action
-
-Add automated code reviews to your PRs:
-
-```yaml
-# .github/workflows/code-review.yml
-name: AI Code Review
-
-on:
-  pull_request:
-    types: [opened, synchronize]
-
-jobs:
-  review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: AI Code Review
-        uses: techn4r/ai-code-reviewer@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          model: "gpt-4"  # or "claude-3", "local"
-          severity: "medium"  # minimum severity to comment
-```
-
-### Action Outputs
-
-The action will:
-- ✅ Add inline comments on problematic code
-- 📊 Post a summary comment with overall review
-- 🏷️ Add labels based on review severity
-
-<img src="assets/github-action-demo.png" alt="GitHub Action Demo" width="600">
-
-## 🔧 API Server
-
-Run as a REST API:
-
-```bash
-# Start the server
-ai-review serve --port 8000
-
-# Or with Docker
-docker run -p 8000:8000 ai-code-reviewer
-```
-
-### API Endpoints
-
-```bash
-# Review code
-curl -X POST http://localhost:8000/review \
-  -H "Content-Type: application/json" \
-  -d '{
-    "code": "def foo(x): return x+1",
-    "language": "python",
-    "context": "This function increments a counter"
-  }'
-
-# Review a diff
-curl -X POST http://localhost:8000/review/diff \
-  -H "Content-Type: application/json" \
-  -d '{
-    "diff": "@@ -1,3 +1,5 @@...",
-    "file_path": "src/utils.py"
-  }'
-```
-
-### Response Format
-
-```json
-{
-  "status": "success",
-  "review": {
-    "issues": [
-      {
-        "type": "bug",
-        "severity": "high",
-        "line": 5,
-        "message": "Potential null pointer dereference",
-        "suggestion": "Add null check before accessing property",
-        "code_suggestion": "if (obj != null) { ... }"
-      }
-    ],
-    "summary": {
-      "total_issues": 3,
-      "bugs": 1,
-      "security": 0,
-      "style": 2,
-      "quality_score": 7.5
-    },
-    "positive_feedback": [
-      "Good use of type hints",
-      "Clear function naming"
-    ]
-  }
-}
-```
-
-## 🎮 Demo
-
-Try it online: **[AI Code Reviewer Demo](https://huggingface.co/spaces/techn4r/ai-code-reviewer)**
-
-Or run locally:
-
-```bash
-# Clone the repo
-git clone https://github.com/techn4r/ai-code-reviewer.git
+git clone https://github.com/ssivitskii/ai-code-reviewer.git
 cd ai-code-reviewer
-
-# Install dependencies
-pip install -e ".[dev]"
-
-# Run Streamlit demo
-streamlit run demo/app.py
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[api,demo,dev]"
 ```
 
-## ⚙️ Configuration
-
-Create `.ai-review.yml` in your project root:
-
-```yaml
-# Model settings
-model:
-  provider: "openai"  # openai, anthropic, local
-  name: "gpt-4"
-  temperature: 0.1
-
-# Review settings
-review:
-  severity_threshold: "low"  # low, medium, high, critical
-  max_comments: 20
-  include_positive: true
-
-# Language-specific rules
-rules:
-  python:
-    check_types: true
-    docstring_required: true
-    max_complexity: 10
-  
-  javascript:
-    prefer_const: true
-    no_var: true
-
-# Ignore patterns
-ignore:
-  - "*.test.js"
-  - "**/__pycache__/**"
-  - "vendor/**"
-```
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      AI Code Reviewer                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────┐    ┌──────────────┐    ┌──────────────────┐  │
-│  │  Input   │───▶│ Diff Parser  │───▶│  Code Analyzer   │  │
-│  │ (PR/File)│    │              │    │                  │  │
-│  └──────────┘    └──────────────┘    └────────┬─────────┘  │
-│                                               │             │
-│                                               ▼             │
-│  ┌──────────┐    ┌──────────────┐    ┌──────────────────┐  │
-│  │  Output  │◀───│   Formatter  │◀───│    LLM Engine    │  │
-│  │(Comments)│    │              │    │ (GPT/Claude/Local)│  │
-│  └──────────┘    └──────────────┘    └──────────────────┘  │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## 📊 Benchmarks
-
-Tested on 1000 real PRs from popular open-source projects:
-
-| Metric | Score |
-|--------|-------|
-| Bug Detection Accuracy | 84.2% |
-| False Positive Rate | 12.3% |
-| Avg. Review Time | 8.4s |
-| Helpful Suggestions | 91.7% |
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md).
+Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` in your environment for the corresponding provider. Choose a model available to your account:
 
 ```bash
-# Setup development environment
-git clone https://github.com/techn4r/ai-code-reviewer.git
-cd ai-code-reviewer
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Run linters
-ruff check .
-mypy src/
+ai-review review examples/sample_bad_code.py --provider openai --model YOUR_MODEL --output json
+ai-review staged --repo . --provider openai --model YOUR_MODEL
+ai-review diff changes.diff --provider openai --model YOUR_MODEL
 ```
 
-## 📄 License
+For a local server, set `LOCAL_LLM_URL` to its OpenAI-compatible base URL (default: `http://localhost:11434/v1`) and use `--provider local --model YOUR_LOCAL_MODEL`. The server and model must already be running.
 
-MIT License - see [LICENSE](LICENSE) for details.
+### Interfaces
 
----
+```bash
+# FastAPI: interactive documentation at http://127.0.0.1:8000/docs
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
 
-<div align="center">
+# Streamlit
+python -m streamlit run demo/app.py
+```
 
-**[⬆ Back to Top](#-ai-code-reviewer)**
+The API currently initializes the default OpenAI reviewer. `POST /review` returns top-level `status`, `issues`, `summary`, `positive_feedback` and `file_path` fields; `POST /review/diff` returns a list of review results. Provider/model selection shown above applies to the CLI.
 
-Made with ❤️ by developers, for developers
+## Repository map
 
-</div>
+| Path | Purpose |
+| --- | --- |
+| `src/ai_code_reviewer/` | Review engine, configuration, prompts and provider adapters |
+| `cli/main.py` | Click commands |
+| `api/main.py` | HTTP endpoints |
+| `demo/app.py` | Streamlit interface |
+| `action/` | Experimental GitHub Action integration |
+| `tests/` | Automated tests |
+
+## Validation and limitations
+
+```bash
+python -m pytest
+```
+
+Tests use mocked model responses; they do not establish real-world review accuracy. No reproducible quality benchmark is published in this repository. To evaluate a provider, record the model version, prompt, labelled code samples, false positives, missed issues, latency and cost.
+
+The GitHub Action integration is experimental: its dependency installation and API-key wiring need verification before adoption. `ai-review init` writes a configuration template; CLI review commands do not automatically load that file. Use the explicit configuration API when needed. LLM findings require human review, and provider availability depends on your configuration.
+
+## License
+
+[MIT](LICENSE)

@@ -73,11 +73,10 @@ all = [
 ai-review = "cli.main:main"
 
 [project.urls]
-Homepage = "https://github.com/techn4r/ai-code-reviewer"
-Documentation = "https://ai-code-reviewer.readthedocs.io"
-Repository = "https://github.com/techn4r/ai-code-reviewer"
-Issues = "https://github.com/techn4r/ai-code-reviewer/issues"
-Changelog = "https://github.com/techn4r/ai-code-reviewer/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/ssivitskii/ai-code-reviewer"
+Documentation = "https://github.com/ssivitskii/ai-code-reviewer#readme"
+Repository = "https://github.com/ssivitskii/ai-code-reviewer"
+Issues = "https://github.com/ssivitskii/ai-code-reviewer/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ai_code_reviewer", "api", "cli"]
